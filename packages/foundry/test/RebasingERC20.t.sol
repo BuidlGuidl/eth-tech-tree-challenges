@@ -58,6 +58,12 @@ contract RebasingERC20Test is Test {
         luffy = address(this);
         zoro = address(0x123);
         token = new RebasingERC20();
+        // Use a different contract than default if CONTRACT_PATH env var is set
+        string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
+        if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
+            bytes memory contractCode = vm.getCode(contractPath);
+            vm.etch(address(token), contractCode);
+        }
         token.transfer(zoro, 1000 * 10 ** token.decimals());
         luffyBalance1 = token.balanceOf(luffy);
         zoroBalance1 = token.balanceOf(zoro);
