@@ -29,6 +29,13 @@ contract SocialRecoveryWalletTest is Test {
 
     function setUp() public {
         socialRecoveryWallet = new SocialRecoveryWallet(chosenGuardianList, threshold);
+        // Use a different contract than default if CONTRACT_PATH env var is set
+        string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
+        if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
+            bytes memory args = abi.encode(chosenGuardianList, threshold);
+            bytes memory contractCode = abi.encodePacked(vm.getCode(contractPath), args);
+            vm.etch(address(socialRecoveryWallet), contractCode);
+        }
         dai = new Token("Dai", "DAI");
         vm.deal(address(socialRecoveryWallet), 1 ether);
     }
