@@ -80,6 +80,12 @@ contract MultisendTest is Test {
         tokenRecipients = [luffy, zoro];
 
         multisend = new Multisend();
+        // Use a different contract than default if CONTRACT_PATH env var is set
+        string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
+        if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
+            bytes memory contractCode = vm.getCode(contractPath);
+            vm.etch(address(multisend), contractCode);
+        }
     }
 
     function testSendETH() external {
