@@ -18,8 +18,12 @@ contract VotingTest is Test {
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
             bytes memory args = abi.encode(address(token), 86400);
-            bytes memory contractCode = abi.encodePacked(vm.getCode(contractPath), args);
-            vm.etch(address(voting), contractCode);
+            bytes memory bytecode = abi.encodePacked(vm.getCode(contractPath), args);
+            address deployed;
+            assembly {
+                deployed := create(0, add(bytecode, 0x20), mload(bytecode))
+            }
+            voting = Voting(deployed);
         } else {
             voting = new Voting(address(token), 86400); // 1 day voting period
         }
