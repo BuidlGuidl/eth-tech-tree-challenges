@@ -79,12 +79,17 @@ contract MultisendTest is Test {
         recipients = [luffy, zoro];
         tokenRecipients = [luffy, zoro];
 
-        multisend = new Multisend();
         // Use a different contract than default if CONTRACT_PATH env var is set
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
-            bytes memory contractCode = vm.getCode(contractPath);
-            vm.etch(address(multisend), contractCode);
+            bytes memory bytecode = vm.getCode(contractPath);
+            address deployed;
+            assembly {
+                deployed := create(0, add(bytecode, 0x20), mload(bytecode))
+            }
+            multisend = Multisend(deployed);
+        } else {
+            multisend = new Multisend();
         }
     }
 
