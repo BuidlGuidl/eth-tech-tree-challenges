@@ -14,12 +14,17 @@ contract DeadMansSwitchTest is Test {
 
     // Setup the contract before each test
     function setUp() public {
-        deadMansSwitch = new DeadMansSwitch();
         // Use a different contract than default if CONTRACT_PATH env var is set
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
-            bytes memory contractCode = vm.getCode(contractPath);
-            vm.etch(address(deadMansSwitch), contractCode);
+            bytes memory bytecode = vm.getCode(contractPath);
+            address deployed;
+            assembly {
+                deployed := create(0, add(bytecode, 0x20), mload(bytecode))
+            }
+            deadMansSwitch = DeadMansSwitch(deployed);
+        } else {
+            deadMansSwitch = new DeadMansSwitch();
         }
     }
 
