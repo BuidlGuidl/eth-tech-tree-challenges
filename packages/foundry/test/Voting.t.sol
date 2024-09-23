@@ -14,13 +14,18 @@ contract VotingTest is Test {
 
     function setUp() public {
         token = new DecentralizedResistanceToken(1000000 * 10 ** 18); // 1,000,000 tokens
-        voting = new Voting(address(token), 86400); // 1 day voting period
         // Use a different contract than default if CONTRACT_PATH env var is set
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
             bytes memory args = abi.encode(address(token), 86400);
-            bytes memory contractCode = abi.encodePacked(vm.getCode(contractPath), args);
-            vm.etch(address(voting), contractCode);
+            bytes memory bytecode = abi.encodePacked(vm.getCode(contractPath), args);
+            address deployed;
+            assembly {
+                deployed := create(0, add(bytecode, 0x20), mload(bytecode))
+            }
+            voting = Voting(deployed);
+        } else {
+            voting = new Voting(address(token), 86400); // 1 day voting period
         }
         token.setVotingContract(address(voting)); // SetVotingContract
         // Distribute tokens
