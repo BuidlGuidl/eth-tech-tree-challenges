@@ -11,12 +11,17 @@ contract WrappedETHTest is Test {
     uint ONE_THOUSAND = 1000 wei;
 
     function setUp() public {
-        wrappedETH = new WrappedETH();
         // Use a different contract than default if CONTRACT_PATH env var is set
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
-            bytes memory contractCode = vm.getCode(contractPath);
-            vm.etch(address(wrappedETH), contractCode);
+            bytes memory bytecode = vm.getCode(contractPath);
+            address deployed;
+            assembly {
+                deployed := create(0, add(bytecode, 0x20), mload(bytecode))
+            }
+            wrappedETH = WrappedETH(deployed);
+        } else {
+            wrappedETH = new WrappedETH();
         }
     }
 
