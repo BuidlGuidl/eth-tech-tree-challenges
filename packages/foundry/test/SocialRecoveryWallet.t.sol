@@ -32,8 +32,12 @@ contract SocialRecoveryWalletTest is Test {
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
             bytes memory args = abi.encode(chosenGuardianList, threshold);
-            bytes memory contractCode = abi.encodePacked(vm.getCode(contractPath), args);
-            vm.etch(address(socialRecoveryWallet), contractCode);
+            bytes memory bytecode = abi.encodePacked(vm.getCode(contractPath), args);
+            address deployed;
+            assembly {
+                deployed := create(0, add(bytecode, 0x20), mload(bytecode))
+            }
+            socialRecoveryWallet = SocialRecoveryWallet(deployed);
         } else {
             socialRecoveryWallet = new SocialRecoveryWallet(chosenGuardianList, threshold);
         }
