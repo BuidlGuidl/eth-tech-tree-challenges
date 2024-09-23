@@ -19,13 +19,14 @@ contract EthStreamingTest is Test {
      */
     function setUp() public {
         // Deploy the contract
-        ethStreaming = new EthStreaming(FREQUENCY);
         // Use a different contract than default if CONTRACT_PATH env var is set
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
             bytes memory args = abi.encode(FREQUENCY);
             bytes memory contractCode = abi.encodePacked(vm.getCode(contractPath), args);
             vm.etch(address(ethStreaming), contractCode);
+        } else {
+            ethStreaming = new EthStreaming(FREQUENCY);
         }
         // Fund the contract
         (bool success, ) = payable(ethStreaming).call{value: STARTING_BALANCE}(
