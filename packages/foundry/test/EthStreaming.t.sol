@@ -23,8 +23,12 @@ contract EthStreamingTest is Test {
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
             bytes memory args = abi.encode(FREQUENCY);
-            bytes memory contractCode = abi.encodePacked(vm.getCode(contractPath), args);
-            vm.etch(address(ethStreaming), contractCode);
+            bytes memory bytecode = abi.encodePacked(vm.getCode(contractPath), args);
+            address deployed;
+            assembly {
+                deployed := create(0, add(bytecode, 0x20), mload(bytecode))
+            }
+            ethStreaming = EthStreaming(deployed);
         } else {
             ethStreaming = new EthStreaming(FREQUENCY);
         }
