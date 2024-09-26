@@ -15,7 +15,7 @@ contract WrappedETHTest is Test {
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
             bytes memory bytecode = vm.getCode(contractPath);
-            address deployed;
+            address payable deployed;
             assembly {
                 deployed := create(0, add(bytecode, 0x20), mload(bytecode))
             }
