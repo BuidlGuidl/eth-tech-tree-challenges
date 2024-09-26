@@ -33,7 +33,7 @@ contract SocialRecoveryWalletTest is Test {
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
             bytes memory args = abi.encode(chosenGuardianList, threshold);
             bytes memory bytecode = abi.encodePacked(vm.getCode(contractPath), args);
-            address deployed;
+            address payable deployed;
             assembly {
                 deployed := create(0, add(bytecode, 0x20), mload(bytecode))
             }
