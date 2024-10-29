@@ -49,7 +49,7 @@ Define a function called `vote` that receives a bool as a parameter. The bool re
 - Revert if caller doesn't have any "DRT" tokens.
 - Revert if the voting period (set in the constructor) has already passed.
 - Revert if the caller has already voted.
-- The caller's token balance should be counted towards their outcome, "For" or "Against" the proposal. For instance, if same holds 10 tokens and votes against the proposal then the proposal should have 10 votes added to the "Against" outcome.
+- The caller's token balance should be counted towards their outcome, "For" or "Against" the proposal. For instance, if Sam holds 10 tokens and votes against the proposal then the proposal should have 10 votes added to the "Against" outcome.
 - Emit an event called `VoteCasted(address voter, bool vote, uint256 weight)` with the caller address, the bool representing whether they were "For" or "Against" and their token balance.
 
 ### Step 3
