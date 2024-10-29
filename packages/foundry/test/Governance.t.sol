@@ -211,4 +211,10 @@ contract GovernanceTest is Test {
         bool result = governance.getResult(proposalId);
         assertEq(result, true);
     }
+
+    function testOnlyTokenCanRemoveVotes() public {
+        vm.prank(userOne);
+        vm.expectRevert();
+        governance.removeVotes(userOne);
+    }
 }
