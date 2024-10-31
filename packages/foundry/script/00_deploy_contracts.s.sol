@@ -7,7 +7,7 @@ import "./DeployHelpers.s.sol";
 contract DeployContracts is ScaffoldETHDeploy {
   function run() external ScaffoldEthDeployerRunner {
     address[] memory chosenGuardianList;
-    SocialRecoveryWallet socialRecoveryWallet = new SocialRecoveryWallet(chosenGuardianList, 2);
+    SocialRecoveryWallet socialRecoveryWallet = new SocialRecoveryWallet(chosenGuardianList);
     console.logString(
         string.concat(
             "SocialRecoveryWallet deployed at: ",
