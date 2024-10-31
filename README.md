@@ -13,7 +13,6 @@ This challenge will require you to build a contract that is capable of sending t
 
 Your task starts in `packages/foundry/contracts/Multisend.sol`.
 
-### Step 1
 Create a contract called `Multisend` and define two methods:
 1. `sendETH` which takes an array of payable addresses that represents the recipients and an array of uint amounts representing the amount to send to each address in the array of recipients. Both of the arrays should have equal lengths. Use the arrays to send the correct amount to each recipient. Emit an event called `SuccessfulETHTransfer(address _sender, address payable[] _receivers, uint256[]  _amounts)`. You should revert if any transfer is unsuccessful.
 ---
