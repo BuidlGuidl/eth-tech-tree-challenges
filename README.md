@@ -9,14 +9,32 @@ Native assets to a blockchain, such as ETH for Ethereum, and ERC20 tokens follow
 
 ## Challenge Description
 
-This challenge will require the user to build a contract that is capable of sending tokens or ETH to multiple provided addresses. Transference of tokens and ETH are basics that a student must understand in smart contract development.
+This challenge will require you to build a contract that is capable of sending tokens or ETH to multiple provided addresses. Transference of tokens and ETH are basics that you must understand in smart contract development.
 
-Your task starts in `packages/foundry/contracts/Multisend.sol`. Use your solidity skills to make this smart contract whilst meeting the following criteria:
+Your task starts in `packages/foundry/contracts/Multisend.sol`.
 
-- The contract design uses two separate methods, one for sending ETH and one for sending any ERC20 token. 
-- Each method will be provided an array of addresses and an array of amounts. 
-- The ERC20 method will also receive the token address.
+Create a contract called `Multisend` and define two methods:
+1. `sendETH` which takes an array of payable addresses that represents the recipients and an array of uint amounts representing the amount to send to each address in the array of recipients. Both of the arrays should have equal lengths. Use the arrays to send the correct amount to each recipient. Emit an event called `SuccessfulETHTransfer(address _sender, address payable[] _receivers, uint256[]  _amounts)`. You should revert if any transfer is unsuccessful.
+---
+<details markdown='1'><summary>🔎 Hint</summary>
+The function signature should look like this:
 
-Further `requirements` are outlined within the Nat Spec inside `Multisend.sol` similar to all other tech tree challenges. Use the Nat Spec comments combined with troubleshooting using the unit tests for this challenge by following the foundry instructions below.
+```
+sendETH(address payable[], uint256[])
+```
+</details>  
+
+---
+2. `sendTokens` which takes an array of payable addresses that represents the recipients and an array of uint amounts representing the amount to send to each address in the array of recipients. Both of the arrays should have equal lengths. Use the arrays to send the correct amount of tokens to each recipient. Emit an event called `SuccessfulTokenTransfer(address indexed _sender, address[] indexed _receivers, uint256[] _amounts, address _token)`. You should revert if any transfer is unsuccessful.
+---
+<details markdown='1'><summary>🔎 Hint</summary>
+The function signature should look like this:
+
+```
+sendTokens(address[], uint256[], address)
+```
+</details>  
+
+---
 
 @@BOTTOM_CONTENT@@

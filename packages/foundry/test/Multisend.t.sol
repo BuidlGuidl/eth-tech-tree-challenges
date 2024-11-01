@@ -12,18 +12,6 @@ import "../contracts/MockToken.sol";
  */
 contract MultisendTest is Test {
 
-    /// Events
-
-    /**
-     * @notice Successful transfer of ETH has been carried out.
-     */
-    event SuccessfulETHTransfer(address indexed _sender, address payable[] indexed _receivers, uint256[]  _amounts);
-
-    /**
-     * @notice Successful transfer of Tokens has been carried out.
-     */
-    event SuccessfulTokenTransfer(address indexed _sender, address[] indexed _receivers, uint256[] _amounts);
-
     /// Vars
 
     Multisend multisend;
@@ -106,7 +94,7 @@ contract MultisendTest is Test {
         recipients = [luffy, nami];
         vm.prank(zoro);
         vm.expectEmit(true, true, false, true);
-        emit SuccessfulETHTransfer(zoro, recipients, amounts);
+        emit Multisend.SuccessfulETHTransfer(zoro, recipients, amounts);
 
         multisend.sendETH{value: amounts[0] + amounts[1] }(recipients, amounts);
 
@@ -127,13 +115,12 @@ contract MultisendTest is Test {
         }
         dai.approve(address(multisend), amountsApproved);
         weth.approve(address(multisend), amountsApproved);
-
         vm.expectEmit(true, true, false, true);
-        emit SuccessfulTokenTransfer(nami, tokenRecipients, amounts);
+        emit Multisend.SuccessfulTokenTransfer(nami, tokenRecipients, amounts, address(dai));
         multisend.sendTokens(tokenRecipients, amounts, address(dai));
 
         vm.expectEmit(true, true, false, true);
-        emit SuccessfulTokenTransfer(nami, tokenRecipients, amounts);
+        emit Multisend.SuccessfulTokenTransfer(nami, tokenRecipients, amounts, address(weth));
         multisend.sendTokens(tokenRecipients, amounts, address(weth));
         vm.stopPrank;
 
@@ -153,11 +140,11 @@ contract MultisendTest is Test {
         weth.approve(address(multisend), amountsApproved);
 
         vm.expectEmit(true, true, false, true);
-        emit SuccessfulTokenTransfer(zoro, tokenRecipients, amounts);
+        emit Multisend.SuccessfulTokenTransfer(zoro, tokenRecipients, amounts, address(dai));
         multisend.sendTokens(tokenRecipients, amounts, address(dai));
 
         vm.expectEmit(true, true, false, true);
-        emit SuccessfulTokenTransfer(zoro, tokenRecipients, amounts);
+        emit Multisend.SuccessfulTokenTransfer(zoro, tokenRecipients, amounts, address(weth));
         multisend.sendTokens(tokenRecipients, amounts, address(weth));
         vm.stopPrank;
 
@@ -184,11 +171,11 @@ contract MultisendTest is Test {
         weth.approve(address(multisend), amountsApproved);
 
         vm.expectEmit(true, true, false, true);
-        emit SuccessfulTokenTransfer(nami, tokenRecipients, amounts);
+        emit Multisend.SuccessfulTokenTransfer(nami, tokenRecipients, amounts, address(dai));
         multisend.sendTokens(tokenRecipients, amounts, address(dai));
 
         vm.expectEmit(true, true, false, true);
-        emit SuccessfulTokenTransfer(nami, tokenRecipients, amounts);
+        emit Multisend.SuccessfulTokenTransfer(nami, tokenRecipients, amounts, address(weth));
         multisend.sendTokens(tokenRecipients, amounts, address(weth));
         vm.stopPrank;
 
@@ -204,7 +191,7 @@ contract MultisendTest is Test {
 
         vm.prank(nami);
         vm.expectEmit(true, true, false, true);
-        emit SuccessfulETHTransfer(nami, recipients, amounts);
+        emit Multisend.SuccessfulETHTransfer(nami, recipients, amounts);
 
         multisend.sendETH{value: amounts[0] + amounts[1] }(recipients, amounts);
 
@@ -215,7 +202,7 @@ contract MultisendTest is Test {
 
     function testNotEnoughETH() external {
         vm.prank(nami);
-        vm.expectRevert(bytes(abi.encodeWithSelector(Multisend.Multisend__SenderNotEnoughETH.selector, nami)));
+        vm.expectRevert();
         multisend.sendETH{value: amounts[0]}(recipients, amounts);
     }
 
@@ -225,7 +212,7 @@ contract MultisendTest is Test {
         dai.approve(address(multisend), defaultBalance + 1);
         weth.approve(address(multisend), defaultBalance + 1);
 
-        vm.expectRevert(bytes(abi.encodeWithSelector(Multisend.Multisend__SenderNotEnoughTokens.selector, nami)));
+        vm.expectRevert();
         multisend.sendTokens(tokenRecipients, tooHighAmounts, address(dai));
         vm.stopPrank;
     }
@@ -236,11 +223,11 @@ contract MultisendTest is Test {
         dai.approve(address(multisend), defaultBalance + 1);
         weth.approve(address(multisend), defaultBalance + 1);
 
-        vm.expectRevert(bytes(abi.encodeWithSelector(Multisend.Multisend__ParamArraysNotEqualLength.selector, 2, 3)));
+        vm.expectRevert();
         multisend.sendTokens(tokenRecipients, biggerAmountsArray, address(dai));
         vm.stopPrank;
 
-        vm.expectRevert(bytes(abi.encodeWithSelector(Multisend.Multisend__ParamArraysNotEqualLength.selector, 2, 3)));
+        vm.expectRevert();
         multisend.sendETH{value: amounts[0] + amounts[1] }(recipients, biggerAmountsArray);
 
         vm.stopPrank;
@@ -248,11 +235,11 @@ contract MultisendTest is Test {
 
     function testUnsuccessfulETHTransfer() external {
         address payable CONTRACT_NOT_PAYABLE = payable(vm.addr(3));
-        vm.etch(address(CONTRACT_NOT_PAYABLE), "function() payable { revert(); }");
+        vm.etch(address(CONTRACT_NOT_PAYABLE), "By adding any arbitrary bytecode to the address, it will no longer be payable");
 
         recipients = [CONTRACT_NOT_PAYABLE, CONTRACT_NOT_PAYABLE];
         vm.prank(nami);
-        vm.expectRevert(bytes(abi.encodeWithSelector(Multisend.Multisend__ETHTransferFailed.selector, nami)));
+        vm.expectRevert();
         multisend.sendETH{value: amounts[0] + amounts[1]}(recipients, amounts);
     }
 
