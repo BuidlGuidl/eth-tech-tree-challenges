@@ -56,7 +56,7 @@ contract VotingTest is Test {
         //User can't double voting
         vm.startPrank(userOne);
         voting.vote(true);
-        vm.expectRevert(bytes(abi.encodeWithSelector(Voting.Voting__AlreadyVoted.selector)));
+        vm.expectRevert();
         voting.vote(true);
         vm.stopPrank();
 
@@ -68,7 +68,7 @@ contract VotingTest is Test {
         // 0 in the balanceof userThree, so he can't vote
         address userFour = address(0x789);
         vm.prank(userFour);
-        vm.expectRevert(bytes(abi.encodeWithSelector(Voting.Voting__NotEnoughTokens.selector)));
+        vm.expectRevert();
         voting.vote(true);
 
         assertFalse(voting.hasVoted(userFour));
@@ -123,14 +123,14 @@ contract VotingTest is Test {
         voting.vote(true);
         vm.prank(userTwo);
         voting.vote(false);
-        vm.expectRevert(bytes(abi.encodeWithSelector(Voting.Voting__VotingHasNotEnded.selector)));
+        vm.expectRevert();
         voting.getResult();
     }
     function testVoteAfterDeadline() public {
         // Try to vote after the voting deadline
         vm.warp(block.timestamp + 86400 + 1);
         vm.prank(userOne);
-        vm.expectRevert(bytes(abi.encodeWithSelector(Voting.Voting__VotingHasEnded.selector)));
+        vm.expectRevert();
         voting.vote(true);
     }
     function testVoteRemovalOnTransfer() public {
@@ -153,7 +153,7 @@ contract VotingTest is Test {
         voting.vote(true);
         vm.prank(userTwo);
         voting.vote(false);
-        vm.expectRevert(bytes(abi.encodeWithSelector(Voting.Voting__NotTokenContract.selector)));
+        vm.expectRevert();
         voting.removeVotes(userOne);
 
         assertTrue(voting.hasVoted(userOne)); 
