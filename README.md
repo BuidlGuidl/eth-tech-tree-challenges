@@ -28,24 +28,34 @@ AMPL uses old contracts called `UFragments.sol`, where `Fragments` are the ERC20
 
 > For reference, this can be seen [here](https://etherscan.deth.net/address/0xD46bA6D942050d489DBd938a2C909A5d5039A161).
 
-**Now that you understand the context of rebasing tokens, create one named `Rebasing Token`, with the symbol `$RBT`, with the following parameters:**
+**Now that you understand the context of rebasing tokens, create a contract named `RebasingERC20` that defines one named `Rebasing Token`, with the symbol `$RBT`, with the following parameters:**
 
-1. Inherits ERC20.
-2. Rebases RBT, changing the `$RBT` supply proportionally for all token holders.
-3. Rebases with a `int` param `SupplyDelta` that dictates how the supply expands or constricts. Rebases can be positive or negative.
-4. Rebasing logic: Simply use the initial supply, and the total supply (when rebases occur) to calculate a `_scalingFactor`. The `_scalingFactor` is used to adjust token holder's balances proportionally after rebases.
-5. Ensure that the amount transferred when `transfer()` or `transferFrom()` are called are adjusted as per the `_scalingFactor` at the time of the tx.
-6. Use the `abs` helper function as needed, and make sure to write the `_update()` implementation. 
+1. Inherits all ERC20 methods, events and errors.
+2. The contract has an owner.
+3. Constructor will receive the total supply as a parameter and it will be allocated to the owner.
+4. There is a method called `rebase` that accepts an `int256` that determines the amount to rebase, plus or minus. It should only be allowed to be called by the contract owner. When called, emit an event called `Rebase(uint256 totalSupply)` with the new total supply of tokens.
 
 **Assumptions:**
 
-1. `$RBT` rebasing is called based on some external events. For this exercise it doesn't really matter, but you could imagine that decentralized oracles are querying the price of `$RBT` and if it deviates from some set price then rebases are called.
-2. `$RBT` contract owner could be some treasury contract or something that exists in your imagination 😉.
-3. `$RBT` _initialSupply is 1 million tokens.
-4. `$RBT` `decimals` is 18.
-5. `$RBT` is distributed via some imaginary mechanism, for now it's just assumed as another ERC20 and thus can be transferred as such. Thus this is not in the scope of the challenge. That said, tests to ensure that your challenge submission works will just transfer some `$RBT` to fake users and check that your rebasing calculations work correctly.
-6. Minting new tokens is not handled via normal mint() functions, token balances are changed as per the rebasing logic implemented within this contract.
-7. Burning is handled via the `_update()` hook instead of the typical `burn()` function seen with other ERC20s.
+- User balances should change after a rebase.
+- The rebase mechanism should update the total supply by whatever number it is supplied.
+- As an example, if the total token supply is 10mm and it is rebased with negative 9mm (`rebase(-9000000)`) then the total supply is only 1mm and each holder holds 1/10th the amount they held prior to the rebase. A balance of 1000 would become 100. This should work when given a positive number as well. `rebase(9000000)` would return the total supply and user balances to what they were prior to the first rebase. 
+- Don't change token allowances when rebases occur.
+- For the sake of simplicity and to avoid rounding errors you can assume that the rebase method will only be called with large numbers that are wholly divisible by 10e6.
+
+---
+<details markdown='1'>
+<summary>🔎 Hint</summary>
+You will need to either inherit an OpenZeppelin ERC20 implementation and override several of methods or just implement your own ERC20 implementation from scratch.
+<details markdown='1'>
+<summary>Another hint please?!</summary>
+The balances returned by `balanceOf(address)` will need to be different from the actual internal balances. You may find it helpful to assign the totalSupply constructor parameter to a variable so you can reference it later when determining how much the supply has changed through rebasing.
+<details markdown='1'>
+<summary>Come again?</summary>
+When you return a users balance it should be derived by some logic. You could define a variable that gets adjusted when a rebase occurs and divide/multiply the internally tracked balance by this variable to return the adjusted balance. Each time a rebase occurs this variable would be updated accordingly.
+</details>
+</details>
+</details>
 
 ---
 Here are some helpful references:
