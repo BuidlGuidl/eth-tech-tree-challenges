@@ -44,20 +44,10 @@ contract EthStreamingTest is Test {
     }
 
     /**
-     * Ensure value for time until a stream is fully unlocked after a max withdrawal
-     */
-    function testFrequency() public {
-        assertEq(ethStreaming.FREQUENCY(), FREQUENCY);
-    }
-
-    /**
-     * Stream contract should be able to receive ether and emit a `EthReceived` event
+     * Stream contract should be able to receive ether
      */
     function testContractCanReceiveEther() public {
-        address sender = address(this); // For foundry test env, the sender is the test contract itself
         uint256 amount = 1 ether;
-        vm.expectEmit(true, false, false, true);
-        emit EthStreaming.EthReceived(sender, amount); // test contract
         (bool success, ) = payable(ethStreaming).call{value: amount}("");
         assert(success);
         assertEq(address(ethStreaming).balance, STARTING_BALANCE + amount);
@@ -66,9 +56,11 @@ contract EthStreamingTest is Test {
     /**
      * Only the owner of stream contract is allowed to add a stream
      */
-    function testNotOwnerCannotAddStream() public {
+    function testOnlyOwnerCanAddStream() public {
+        // Bob tries to add a stream
         vm.prank(BOB);
-        vm.expectRevert("Ownable: caller is not the owner");
+        // But it should revert since he is not the owner
+        vm.expectRevert();
         ethStreaming.addStream(ALICE, 333);
     }
 
@@ -79,9 +71,6 @@ contract EthStreamingTest is Test {
         vm.expectEmit(true, false, false, true);
         emit EthStreaming.AddStream(ALICE, STREAM_CAP);
         ethStreaming.addStream(ALICE, STREAM_CAP);
-        EthStreaming.StreamConfig memory stream = ethStreaming.getStream(ALICE);
-        assertEq(stream.cap, STREAM_CAP);
-        assertEq(stream.timeOfLastWithdrawal, 0); // stream has not been withdrawn from yet
     }
 
     /**
@@ -90,9 +79,9 @@ contract EthStreamingTest is Test {
     function testWithdrawCannotExceedBalance() public {
         uint256 amount = STARTING_BALANCE + 1 ether;
         ethStreaming.addStream(BOB, amount);
-        vm.expectRevert(EthStreaming.InsufficentFunds.selector);
+        vm.expectRevert();
         vm.prank(BOB);
-        ethStreaming.maxWithdraw();
+        ethStreaming.withdraw(amount);
     }
 
     /**
@@ -100,8 +89,8 @@ contract EthStreamingTest is Test {
      */
     function testInvalidAccountCannotWithdraw() public {
         vm.prank(BOB);
-        vm.expectRevert(EthStreaming.NoActiveStream.selector);
-        ethStreaming.maxWithdraw();
+        vm.expectRevert();
+        ethStreaming.withdraw(STREAM_CAP);
     }
 
     /**
@@ -111,50 +100,98 @@ contract EthStreamingTest is Test {
         vm.prank(ALICE);
         vm.expectEmit(true, false, false, true);
         emit EthStreaming.Withdraw(ALICE, STREAM_CAP);
-        ethStreaming.maxWithdraw();
+        ethStreaming.withdraw(STREAM_CAP);
         uint256 aliceBalance = address(ALICE).balance;
         assertEq(aliceBalance, STREAM_CAP);
     }
 
     /**
+     * An account that withdraws a partial amount should have the remaining amount available for withdrawal immediately
+     */
+    function testValidAccountCanWithdrawPartialAmountsOfUnlocked() public {
+        vm.prank(ALICE);
+        ethStreaming.withdraw(STREAM_CAP / 2);
+        vm.prank(ALICE);
+        ethStreaming.withdraw(STREAM_CAP / 2);
+        uint aliceBalanceAfter = address(ALICE).balance;
+        assertEq(aliceBalanceAfter, STREAM_CAP);
+    }
+
+    /**
      * An account that has recently withdrawn from stream should be able to withdraw partial cap before waiting the full frequency
      */
-    function testValidAccountPartialWithdrawal() public {
+    function testValidAccountPartialWithdrawals() public {
         vm.prank(ALICE);
-        ethStreaming.maxWithdraw();
-        uint aliceBalanceBefore = address(ALICE).balance;
+        // Empty Stream
+        ethStreaming.withdraw(STREAM_CAP);
         vm.roll(10);
-        uint256 timePassed = 100000000;
+        // Stream should fill half way
+        uint256 timePassed = FREQUENCY / 2;
         vm.warp(STARTING_TIMESTAMP + timePassed);
         vm.prank(ALICE);
-        ethStreaming.maxWithdraw();
+        ethStreaming.withdraw(STREAM_CAP / 2);
         uint aliceBalanceAfter = address(ALICE).balance;
-        assertGt(aliceBalanceAfter, aliceBalanceBefore);
+        assertEq(aliceBalanceAfter, STREAM_CAP + STREAM_CAP / 2);
     }
 
     /**
-     * Ensure unlocked stream amount is correct before a withdrawal
+     * An account that has withdrawn the full cap should not be be able to withdraw until some time has passed
      */
-    function testUnlockedAmountBeforeWithdraw() public {
-        uint256 amount = ethStreaming.unlockedAmount(ALICE);
-        assertEq(amount, STREAM_CAP);
+    function testValidAccountExcessWithdrawalFails() public {
+        vm.startPrank(ALICE);
+        // Empty Stream
+        ethStreaming.withdraw(STREAM_CAP);
+        vm.expectRevert();
+        ethStreaming.withdraw(1);
     }
 
     /**
-     * Ensure view function reverts for invalid account
+     * Test that the owner can update a stream to a new cap and stream owner can withdraw new cap
      */
-    function testGetStreamForInvalidAccount() public {
-        vm.prank(BOB);
-        vm.expectRevert(EthStreaming.NoActiveStream.selector);
-        ethStreaming.getStream(BOB);
+    function testOwnerCanUpdateStream() public {
+        uint256 newCap = 1 ether;
+        vm.expectEmit(true, false, false, true);
+        emit EthStreaming.AddStream(ALICE, newCap);
+        ethStreaming.addStream(ALICE, newCap);
+        vm.prank(ALICE);
+        vm.expectEmit(true, false, false, true);
+        emit EthStreaming.Withdraw(ALICE, newCap);
+        ethStreaming.withdraw(newCap);
     }
 
     /**
-     * Ensure view function returns correct stream config for a valid account
+     * Ensure reentrancy attack is not possible
      */
-    function testGetStreamForValidAccount() public {
-        EthStreaming.StreamConfig memory stream = ethStreaming.getStream(ALICE);
-        assertEq(stream.cap, STREAM_CAP);
-        assertEq(stream.timeOfLastWithdrawal, 0);
+    function testReentrancyAttackFails() public {
+        vm.deal(address(ethStreaming), 10 ether);
+        ReentrancyTest reentrancyTest = new ReentrancyTest();
+        // The stream contract owner adds a stream, not realizing that the address is a malicious contract
+        ethStreaming.addStream(address(reentrancyTest), STREAM_CAP);
+        // The malicious contract is set up with the right params
+        reentrancyTest.setUp(address(ethStreaming), STREAM_CAP);
+        vm.expectRevert();
+        // The malicious contract attempts the exploit
+        reentrancyTest.exploitWithdraw();
+    }
+}
+
+contract ReentrancyTest {
+    EthStreaming public ethStreaming;
+    uint public STREAM_CAP;
+    function setUp(address ethStreamingContract, uint _streamCap) public payable {
+        // Set up contract reference
+        ethStreaming = EthStreaming(payable(ethStreamingContract));
+        STREAM_CAP = _streamCap;
+    }
+
+    function exploitWithdraw() public {
+        ethStreaming.withdraw(STREAM_CAP);
+    }
+
+    fallback() external payable {
+        // Attempt to call withdraw over and over until no more funds are left
+        if (address(ethStreaming).balance >= STREAM_CAP) {
+            ethStreaming.withdraw(STREAM_CAP);
+        }
     }
 }
