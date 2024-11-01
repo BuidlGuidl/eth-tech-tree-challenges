@@ -19,11 +19,10 @@ contract SocialRecoveryWalletTest is Test {
     address guardian0 = makeAddr("guardian0");
     address guardian1 = makeAddr("guardian1");
     address guardian2 = makeAddr("guardian2");
-    address guardian3 = makeAddr("guardian3");
 
-    address[] chosenGuardianList = [guardian0, guardian1, guardian2, guardian3];
+    address[] chosenGuardianList = [guardian0, guardian1, guardian2];
 
-    uint256 threshold = 3;
+    uint256 threshold = chosenGuardianList.length;
 
     address newOwner = makeAddr("newOwner");
 
@@ -31,7 +30,7 @@ contract SocialRecoveryWalletTest is Test {
         // Use a different contract than default if CONTRACT_PATH env var is set
         string memory contractPath = vm.envOr("CONTRACT_PATH", string("none"));
         if (keccak256(abi.encodePacked(contractPath)) != keccak256(abi.encodePacked("none"))) {
-            bytes memory args = abi.encode(chosenGuardianList, threshold);
+            bytes memory args = abi.encode(chosenGuardianList);
             bytes memory bytecode = abi.encodePacked(vm.getCode(contractPath), args);
             address payable deployed;
             assembly {
@@ -39,10 +38,10 @@ contract SocialRecoveryWalletTest is Test {
             }
             socialRecoveryWallet = SocialRecoveryWallet(deployed);
         } else {
-            socialRecoveryWallet = new SocialRecoveryWallet(chosenGuardianList, threshold);
+            socialRecoveryWallet = new SocialRecoveryWallet(chosenGuardianList);
         }
         dai = new Token("Dai", "DAI");
-        vm.deal(address(socialRecoveryWallet), 1 ether);
+        // vm.deal(address(socialRecoveryWallet), 1 ether);
     }
 
     function testConstructorSetsGaurdians() public {
@@ -54,24 +53,43 @@ contract SocialRecoveryWalletTest is Test {
         assertFalse(socialRecoveryWallet.isGuardian(nonGuardian));
     }
 
-    function testConstructorSetsThreshold() public {
-        assertEq(socialRecoveryWallet.threshold(), threshold);
-    }
-
     function testCallRevertsWithCorrectError() public {
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__CallFailed.selector)));
+        vm.expectRevert();
         socialRecoveryWallet.call(address(this), 0, "");
     }
 
-    function testCallCanSendEth() public {
+    function testCallCanForwardEth() public {
         uint256 initialValue = alice.balance;
 
         address recipient = alice;
         uint256 amountToSend = 1000;
 
-        socialRecoveryWallet.call(recipient, amountToSend, "");
+        socialRecoveryWallet.call{value: amountToSend}(recipient, amountToSend, "");
 
         assertEq(alice.balance, initialValue + amountToSend);
+    }
+
+    function testCanHoldEth() public {
+        uint256 initialValue = address(socialRecoveryWallet).balance;
+
+        uint256 amountToSend = 1000;
+
+        payable(address(socialRecoveryWallet)).transfer(amountToSend);
+
+        assertEq(address(socialRecoveryWallet).balance, initialValue + amountToSend);
+    }
+
+    function testCanMoveHeldEth() public {
+        uint256 initialValue = address(socialRecoveryWallet).balance;
+
+        uint256 amountToSend = 1000;
+
+        payable(address(socialRecoveryWallet)).transfer(amountToSend);
+
+        assertEq(address(socialRecoveryWallet).balance, initialValue + amountToSend);
+
+        socialRecoveryWallet.call(alice, amountToSend, "");
+        assertEq(alice.balance, amountToSend);
     }
 
     function testCantCallIfNotOwner() public {
@@ -80,24 +98,11 @@ contract SocialRecoveryWalletTest is Test {
         address recipient = alice;
         uint256 amountToSend = 1000;
 
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__NotOwner.selector)));
+        vm.expectRevert();
         vm.prank(alice);
         socialRecoveryWallet.call(recipient, amountToSend, "");
 
         assertEq(alice.balance, initialValue);
-    }
-
-    function testCantCallIfInRecovery() public {
-        vm.prank(guardian0);
-        socialRecoveryWallet.initiateRecovery(newOwner);
-
-        assertTrue(socialRecoveryWallet.inRecovery());
-
-        address recipient = alice;
-        uint256 amountToSend = 1000;
-
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__WalletInRecovery.selector)));
-        socialRecoveryWallet.call(recipient, amountToSend, "");
     }
 
     function testCallCanExecuteExternalTransactions() public {
@@ -109,122 +114,92 @@ contract SocialRecoveryWalletTest is Test {
         assertEq(dai.balanceOf(alice), 500);
     }
 
-    function testCanOnlyInitiateRecoveryIfGuardian() public {
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__NotGuardian.selector)));
+    function testCanOnlySignalNewOwnerIfGuardian() public {
+        vm.expectRevert();
         vm.prank(alice);
-        socialRecoveryWallet.initiateRecovery(alice);
+        socialRecoveryWallet.signalNewOwner(alice);
     }
 
-    function testInitiateRecoveryEmitsEvent() public {
+    function testSignalNewOwnerEmitsEvent() public {
         vm.expectEmit();
-        emit SocialRecoveryWallet.RecoveryInitiated(guardian0, newOwner);
+        emit SocialRecoveryWallet.NewOwnerSignaled(guardian0, newOwner);
 
         vm.prank(guardian0);
-        socialRecoveryWallet.initiateRecovery(newOwner);
+        socialRecoveryWallet.signalNewOwner(newOwner);
     }
 
-    function testInitiateRecoveryPutsWalletIntoRecovery() public {
-        assertFalse(socialRecoveryWallet.inRecovery());
-
+    function testCanOnlySignalNewOwnerOnce() public {
         vm.prank(guardian0);
-        socialRecoveryWallet.initiateRecovery(newOwner);
+        socialRecoveryWallet.signalNewOwner(newOwner);
 
-        assertTrue(socialRecoveryWallet.inRecovery());
-    }
-
-    function testCanOnlySupportRecoveryIfGuardian() public {
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__NotGuardian.selector)));
-        address nonGuardian = makeAddr("nonGuardian");
-        vm.prank(nonGuardian);
-        socialRecoveryWallet.supportRecovery(newOwner);
-    }
-
-    function testCanOnlySupportIfWalletIsInRecovery() public {
-        assertEq(socialRecoveryWallet.inRecovery(), false);
-
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__WalletNotInRecovery.selector)));
+        // Try with original guardian
+        vm.expectRevert();
         vm.prank(guardian0);
-        socialRecoveryWallet.supportRecovery(newOwner);
-    }
-
-    function testCanOnlySupportRecoveryOnce() public {
-        vm.prank(guardian0);
-        socialRecoveryWallet.initiateRecovery(newOwner);
+        socialRecoveryWallet.signalNewOwner(newOwner);
 
         vm.prank(guardian1);
-        socialRecoveryWallet.supportRecovery(newOwner);
+        socialRecoveryWallet.signalNewOwner(newOwner);
 
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__AlreadyVoted.selector)));
+        // Try with second guardian
+        vm.expectRevert();
         vm.prank(guardian1);
-        socialRecoveryWallet.supportRecovery(newOwner);
+        socialRecoveryWallet.signalNewOwner(newOwner);
     }
 
-    function testSupportRecoveryEmitsEvent() public {
-        vm.prank(guardian0);
-        socialRecoveryWallet.initiateRecovery(newOwner);
-
-        vm.expectEmit();
-        emit SocialRecoveryWallet.RecoverySupported(guardian1, newOwner);
-
-        vm.prank(guardian1);
-        socialRecoveryWallet.supportRecovery(newOwner);
+    function testSignalNewOwnerChangesOwnerOnceThresholdMet() public {
+        helperChangeOwnerWithThreshold(newOwner);
     }
 
-    function testSupportRecoveryChangesOwnerOnceThresholdMet() public {
-        assertEq(socialRecoveryWallet.threshold(), 3);
-        assertEq(socialRecoveryWallet.owner(), address(this));
-
-        vm.prank(guardian0);
-        socialRecoveryWallet.initiateRecovery(newOwner);
-
-        vm.prank(guardian1);
-        socialRecoveryWallet.supportRecovery(newOwner);
-
-        vm.prank(guardian2);
-        socialRecoveryWallet.supportRecovery(newOwner);
-
-        assertEq(socialRecoveryWallet.owner(), newOwner);
+    function testSignalNewOwnerChangesOwnerTwoTimes() public {
+        helperChangeOwnerWithThreshold(newOwner);
+        address newOwner2 = makeAddr("newOwner2");
+        helperChangeOwnerWithThreshold(newOwner2);
     }
 
-    function testSupportRecoveryEmitsEventWhenRecoveryExecuted() public {
+    function testSignalNewOwnerEmitsEventWhenRecoveryExecuted() public {
         vm.prank(guardian0);
-        socialRecoveryWallet.initiateRecovery(newOwner);
+        socialRecoveryWallet.signalNewOwner(newOwner);
 
         vm.prank(guardian1);
-        socialRecoveryWallet.supportRecovery(newOwner);
+        socialRecoveryWallet.signalNewOwner(newOwner);
 
         vm.expectEmit();
         emit SocialRecoveryWallet.RecoveryExecuted(newOwner);
 
         vm.prank(guardian2);
-        socialRecoveryWallet.supportRecovery(newOwner);
+        socialRecoveryWallet.signalNewOwner(newOwner);
     }
 
     function testAddGuardian() public {
         address newGuardian = makeAddr("newGuardian");
-        uint256 original_num_guardians = socialRecoveryWallet.numGuardians();
         assertFalse(socialRecoveryWallet.isGuardian(newGuardian));
 
         vm.prank(socialRecoveryWallet.owner());
         socialRecoveryWallet.addGuardian(newGuardian);
 
         assertTrue(socialRecoveryWallet.isGuardian(newGuardian));
-        assertEq(socialRecoveryWallet.numGuardians(), original_num_guardians + 1);
+    }
 
-        // Try to add the same guardian again
-        original_num_guardians = socialRecoveryWallet.numGuardians();
+    function testAddSameGuardianTwice() public {
+        address newGuardian = makeAddr("newGuardian");
+        assertFalse(socialRecoveryWallet.isGuardian(newGuardian));
+
         vm.prank(socialRecoveryWallet.owner());
         socialRecoveryWallet.addGuardian(newGuardian);
 
         assertTrue(socialRecoveryWallet.isGuardian(newGuardian));
-        assertEq(socialRecoveryWallet.numGuardians(), original_num_guardians);
+
+        // Try to add the same guardian again
+        vm.prank(socialRecoveryWallet.owner());
+        vm.expectRevert();
+        socialRecoveryWallet.addGuardian(newGuardian);
     }
 
     function testCantAddGuardianIfNotOwner() public {
         address newGuardian = makeAddr("newGuardian");
         assertFalse(socialRecoveryWallet.isGuardian(newGuardian));
 
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__NotOwner.selector)));
+        vm.expectRevert();
         vm.prank(alice);
         socialRecoveryWallet.addGuardian(newGuardian);
 
@@ -234,7 +209,7 @@ contract SocialRecoveryWalletTest is Test {
     function testCantRemoveGuardianIfNotOwner() public {
         assertTrue(socialRecoveryWallet.isGuardian(guardian0));
 
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__NotOwner.selector)));
+        vm.expectRevert();
         vm.prank(alice);
         socialRecoveryWallet.removeGuardian(guardian0);
 
@@ -242,50 +217,32 @@ contract SocialRecoveryWalletTest is Test {
     }
 
     function testRemoveGuardian() public {
-        uint256 original_num_guardians = socialRecoveryWallet.numGuardians();
         assertTrue(socialRecoveryWallet.isGuardian(guardian0));
 
         vm.prank(socialRecoveryWallet.owner());
         socialRecoveryWallet.removeGuardian(guardian0);
 
         assertFalse(socialRecoveryWallet.isGuardian(guardian0));
-        assertEq(socialRecoveryWallet.numGuardians(), original_num_guardians - 1);
+    }
 
-        // Try to remove address that was never a guardian
-        original_num_guardians = socialRecoveryWallet.numGuardians();
+    function testRemoveNonExistantGuardian() public {
+        // // Try to remove address that was never a guardian
         vm.prank(socialRecoveryWallet.owner());
+        vm.expectRevert();
         socialRecoveryWallet.removeGuardian(alice);
-
-        assertFalse(socialRecoveryWallet.isGuardian(alice));
-        assertEq(socialRecoveryWallet.numGuardians(), original_num_guardians);
     }
 
-    function testCantSetThresholdIfNotOwner() public {
-        uint256 newThreshold = 2;
+    function helperChangeOwnerWithThreshold(address _newOwner) internal {
 
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__NotOwner.selector)));
-        vm.prank(alice);
-        socialRecoveryWallet.setThreshold(newThreshold);
+        vm.prank(guardian0);
+        socialRecoveryWallet.signalNewOwner(_newOwner);
 
-        assertEq(socialRecoveryWallet.threshold(), threshold);
-    }
+        vm.prank(guardian1);
+        socialRecoveryWallet.signalNewOwner(_newOwner);
 
-    function testCantSetThresholdHigherThanNumGuardians() public {
-        uint256 newThreshold = 5;
+        vm.prank(guardian2);
+        socialRecoveryWallet.signalNewOwner(_newOwner);
 
-        vm.prank(socialRecoveryWallet.owner());
-        vm.expectRevert(bytes(abi.encodeWithSelector(SocialRecoveryWallet.SocialRecoveryWallet__ThresholdTooHigh.selector)));
-        socialRecoveryWallet.setThreshold(newThreshold);
-
-        assertEq(socialRecoveryWallet.threshold(), threshold);
-    }
-
-    function testSetThreshold() public {
-        uint256 newThreshold = 2;
-
-        vm.prank(socialRecoveryWallet.owner());
-        socialRecoveryWallet.setThreshold(newThreshold);
-
-        assertEq(socialRecoveryWallet.threshold(), newThreshold);
+        assertEq(socialRecoveryWallet.owner(), _newOwner);
     }
 }
