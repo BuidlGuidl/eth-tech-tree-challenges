@@ -1,15 +1,15 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../contracts/WrappedETH.sol";
+import "../contracts/Challenge.sol";
 import "./DeployHelpers.s.sol";
 
-contract DeployWrappedETH is ScaffoldETHDeploy {
+contract DeployContract is ScaffoldETHDeploy {
   function run() external ScaffoldEthDeployerRunner {
-    WrappedETH yourContract = new WrappedETH();
+    Contract yourContract = new Contract();
     console.logString(
       string.concat(
-        "WrappedETH deployed at: ", vm.toString(address(yourContract))
+        "Contract deployed at: ", vm.toString(address(yourContract))
       )
     );
   }
