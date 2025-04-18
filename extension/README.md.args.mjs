@@ -1,5 +1,4 @@
 export const extraContents = `# Wrapped Token Challenge - ETH Tech Tree
-*This challenge is meant to be used in the context of the [ETH Tech Tree](https://github.com/BuidlGuidl/eth-tech-tree).*
 
 ## Challenge Description
 This challenge will require you to write an [ERC20](https://eips.ethereum.org/EIPS/eip-20) compliant token wrapper for ETH. Your task starts in \`packages/foundry/contracts/WrappedETH.sol\`. Use your Solidity skills to make this smart contract receive ETH and give the depositor an equal amount of WETH, an ERC20 version of native ETH. It should also handle a user reclaiming their ETH for their WETH.  An ERC20 form of ETH is useful because DeFi protocols don't have to worry about integrating special functions for handling native ETH, instead they can just write methods that handle any ERC20 token. 
