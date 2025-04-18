@@ -20,7 +20,7 @@ In this challenge, we will guide you through the process of constructing a rebas
 
 ## Challenge Description
 
-This challenge will require users to write an ERC20 contract that contains rebasing token logic. 
+This challenge requires you to implement an ERC20 contract with rebasing token logic.
 
 Rebasing tokens automatically adjust its supply typically based on some external reason, for example: to target a specific price. As the token supply is increased or decreased periodically, the effects are applied to all token holders, proportionally. Rebasing can be used as an alternative price stabilization method versus traditional market mechanisms.
 
