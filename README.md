@@ -23,7 +23,7 @@ Add the following write functions:
 - `addBeneficiary(address beneficiary)` -- This function should add the given address to the caller's list of beneficiaries. Emit a `BeneficiaryAdded(address user, address beneficiary)` event.
 - `removeBeneficiary(address beneficiary)` -- This function should remove a beneficiary from the caller's list of beneficiaries. Emit a `BeneficiaryRemoved(address user, address beneficiary)` event.
 - `deposit()` -- Should add any value with which it is called to the callers balance. Emit a `Deposit(address depositor, uint amount)` event.
-- `withdraw(address account, uint amount)` -- Should enable an account to withdraw from it's own balance in the contract. Should also allow a beneficiary to withdraw from a delegated account if the time since the accounts last check in is greater than the check in interval set up by the account. Emit a `Withdrawal(address beneficiary, uint amount)` event.
+- `withdraw(address account, uint amount)` -- Should enable an account to withdraw from its own balance in the contract. Should also allow a beneficiary to withdraw from a delegated account if the time since the accounts last check in is greater than the check in interval set up by the account. Emit a `Withdrawal(address beneficiary, uint amount)` event.
 
 And the following view functions:
 
@@ -59,7 +59,7 @@ First you will need to generate an account. **You can skip this step if you have
 ```bash
   yarn generate
 ```
-You can optionally give your new account a name be passing it in like so: `yarn generate NAME-FOR-ACCOUNT`. The default is `scaffold-eth-custom`.
+You can optionally give your new account a name by passing it in like so: `yarn generate NAME-FOR-ACCOUNT`. The default is `scaffold-eth-custom`.
 
 You will be prompted for a password to encrypt your newly created keystore. Make sure you choose a [good one](https://xkcd.com/936/) if you intend to use your new account for more than testnet funds.
 
