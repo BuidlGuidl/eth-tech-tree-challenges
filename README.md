@@ -1,4 +1,3 @@
-
 # Token Voting Contract - ETH Tech Tree
 
 You can install this challenge using the following command:
