@@ -62,7 +62,7 @@ Look at the <a href="https://solidity-by-example.org/fallback/"> \`receive\` han
 
 ### Step 4
 Create an \`addStream\` method that receives an address and a uint parameter representing the stream recipient and the amount of ETH that is the maximum amount their stream can unlock. Only the owner should be allowed to use this method. They should be able to call it to update recipients unlock amounts in the future in case they want to increase/decrease a stream. Think about how you should store this data so that later you can check
-1. if an address have a stream
+1. if an address has a stream
 2. the maximum amount the address can withdraw 
 3. how much the address has unlocked if the time to completely fill hasn't elapsed since the last time they withdrew funds
 
