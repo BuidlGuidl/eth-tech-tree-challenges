@@ -1,5 +1,4 @@
 export const extraContents = `# Moloch DAO Rage Quit Mechanism - ETH Tech Tree
-*This challenge is meant to be used in the context of the [ETH Tech Tree](https://github.com/BuidlGuidl/eth-tech-tree).*
 
 You are a main contributor to a well known DAO that distributes ETH to builders in the space. Recently there was a proposal to fund a group of hackers with a splotchy past. You vote against the proposal but the majority of the DAO voted in support. Now you are left feeling somewhat disenfranchised with the DAO but you have no way to formally quit. 
 
