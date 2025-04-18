@@ -1,6 +1,4 @@
-export const extraContents = `
-# Dead Man's Switch - ETH Tech Tree
-*This challenge is meant to be used in the context of the [ETH Tech Tree](https://github.com/BuidlGuidl/eth-tech-tree).*
+export const extraContents = `# Dead Man's Switch - ETH Tech Tree
 
 You are an operative of a group known as **_The Decentralized Resistance_**. On a recent mission several operatives went missing after an assault by the **_Authoritarian Regime_**. Part of their mission involved obtaining a wallet address for an intelligence provider in your network for the purpose of paying them for information. The missing operatives had access to wallets with funds intended to complete this payment but in the wake of them being missing, so are the funds. Your role inside the organization is to ensure that in the event of capture or death during a mission, the organization can reclaim any funds that were held by the operative to help continue to fund your just cause.
 
@@ -20,7 +18,7 @@ Add the following write functions:
 - \`addBeneficiary(address beneficiary)\` -- This function should add the given address to the caller's list of beneficiaries. Emit a \`BeneficiaryAdded(address user, address beneficiary)\` event.
 - \`removeBeneficiary(address beneficiary)\` -- This function should remove a beneficiary from the caller's list of beneficiaries. Emit a \`BeneficiaryRemoved(address user, address beneficiary)\` event.
 - \`deposit()\` -- Should add any value with which it is called to the callers balance. Emit a \`Deposit(address depositor, uint amount)\` event.
-- \`withdraw(address account, uint amount)\` -- Should enable an account to withdraw from it's own balance in the contract. Should also allow a beneficiary to withdraw from a delegated account if the time since the accounts last check in is greater than the check in interval set up by the account. Emit a \`Withdrawal(address beneficiary, uint amount)\` event.
+- \`withdraw(address account, uint amount)\` -- Should enable an account to withdraw from its own balance in the contract. Should also allow a beneficiary to withdraw from a delegated account if the time since the accounts last check in is greater than the check in interval set up by the account. Emit a \`Withdrawal(address beneficiary, uint amount)\` event.
 
 And the following view functions:
 
@@ -56,7 +54,7 @@ First you will need to generate an account. **You can skip this step if you have
 \`\`\`bash
   yarn generate
 \`\`\`
-You can optionally give your new account a name be passing it in like so: \`yarn generate NAME-FOR-ACCOUNT\`. The default is \`scaffold-eth-custom\`.
+You can optionally give your new account a name by passing it in like so: \`yarn generate NAME-FOR-ACCOUNT\`. The default is \`scaffold-eth-custom\`.
 
 You will be prompted for a password to encrypt your newly created keystore. Make sure you choose a [good one](https://xkcd.com/936/) if you intend to use your new account for more than testnet funds.
 
