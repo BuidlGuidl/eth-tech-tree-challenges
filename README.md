@@ -5,8 +5,7 @@ You can install this challenge using the following command:
     npx create-eth@latest -e BuidlGuidl/eth-tech-tree-challenges:social-recovery-extension social-recovery
 ```
 
-Mother's day is coming up and you decide to send your mom some ETH to help her learn more about your world. You set up a new MetaMask wallet and write down the seed phrase on a nice piece of flowered stationary. You briefly consider taking custody of the phrase on her behalf, but ultimately decide against it. To understand your cypherpunk values, she needs to truly own her new gift. She's ecstatic. She immediately hops online, and for the next few days, continues to explore the rich new world that is web3. Then...disaster strikes. Her laptop dies and she's LOST HER SEED PHRASE.
-
+Mother's day is coming up and you decide to send your mom some ETH to help her learn more about your world. You set up a new MetaMask wallet and write down the seed phrase on a nice piece of flowered stationery. You briefly consider taking custody of the phrase on her behalf, but ultimately decide against it. To understand your cypherpunk values, she needs to truly own her new gift. She's ecstatic. She immediately hops online, and for the next few days, continues to explore the rich new world that is web3. Then...disaster strikes. Her laptop dies and she's LOST HER SEED PHRASE.
 ## Challenge Description
 
 A year has passed, and after the horrific debacle of last year's Mother's day, you've vowed to come up with a more user-friendly wallet design. You need it to be able to withstand the loss of a seed phrase, while retaining as much autonomy as possible.
