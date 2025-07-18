@@ -2,7 +2,7 @@
 
 You can install this challenge using the following command:
 ```bash
-    npx create-eth@latest -e BuidlGuidl/eth-tech-tree-challenges:token-wrapper-weth-extension token-wrapper-weth
+    npx create-eth@1.0.1 -e BuidlGuidl/eth-tech-tree-challenges:token-wrapper-weth-extension token-wrapper-weth
 ```
 
 ## Challenge Description
