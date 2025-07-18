@@ -1,29 +1,6 @@
 //SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.19;
 
-contract SocialRecoveryWallet {
-    // State variables
-    address public owner;
-    mapping(address => bool) public isGuardian;
-    mapping(address => mapping(address => bool)) public hasGuardianVoted;
-    mapping(address => uint256) public votesForNewOwner;
-    uint256 public threshold;
+import { console2 } from "../lib/forge-std/src/console2.sol";
 
-    // Events
-    event NewOwnerSignaled(address indexed guardian, address indexed proposedOwner);
-    event RecoveryExecuted(address indexed newOwner);
-
-    constructor(address[] memory _guardians) {}
-
-    function call(address target, uint256 value, bytes memory data) external payable {}
-
-    function signalNewOwner(address newOwner) external {}
-
-    function addGuardian(address guardian) external {}
-
-    function removeGuardian(address guardian) external {}
-
-    receive() external payable {}
-    fallback() external payable {}
-}
+// Good luck!
