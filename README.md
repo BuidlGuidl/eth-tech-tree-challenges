@@ -2,7 +2,7 @@
 
 You can install this challenge using the following command:
 ```bash
-    npx create-eth@latest -e BuidlGuidl/eth-tech-tree-challenges:dead-mans-switch-extension dead-mans-switch
+    npx create-eth@1.0.1 -e BuidlGuidl/eth-tech-tree-challenges:dead-mans-switch-extension dead-mans-switch
 ```
 
 You are an operative of a group known as **_The Decentralized Resistance_**. On a recent mission several operatives went missing after an assault by the **_Authoritarian Regime_**. Part of their mission involved obtaining a wallet address for an intelligence provider in your network for the purpose of paying them for information. The missing operatives had access to wallets with funds intended to complete this payment but in the wake of them being missing, so are the funds. Your role inside the organization is to ensure that in the event of capture or death during a mission, the organization can reclaim any funds that were held by the operative to help continue to fund your just cause.
