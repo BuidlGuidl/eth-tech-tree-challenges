@@ -2,7 +2,7 @@
 
 You can install this challenge using the following command:
 ```bash
-    npx create-eth@1.0.1 -e BuidlGuidl/eth-tech-tree-challenges:rebasing-token-extension rebasing-token
+    npx create-eth@1.0.2 -e BuidlGuidl/eth-tech-tree-challenges:rebasing-token-extension rebasing-token
 ```
 
 Rebasing tokens have become a fascinating aspect of the web3 space, appearing frequently in projects involving DeFi, algorithmic stablecoins, and more. These tokens adjust their supply automatically, based on specific rules, which can create unique opportunities and challenges within the ecosystem. 
