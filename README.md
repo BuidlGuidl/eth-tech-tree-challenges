@@ -2,7 +2,7 @@
 
 You can install this challenge using the following command:
 ```bash
-    npx create-eth@1.0.1 -e BuidlGuidl/eth-tech-tree-challenges:token-voting-extension token-voting
+    npx create-eth@1.0.2 -e BuidlGuidl/eth-tech-tree-challenges:token-voting-extension token-voting
 ```
 
 In a dystopian future where mega-corporations have seized control over all aspects of life, a brave group of technologists and activists form an underground movement known as ***The Decentralized Resistance***. Their mission is to create a new society governed by the people, free from the tyranny of corporate overlords. They believe that blockchain technology holds the key to building a fair and transparent governance system. As a key developer in The Decentralized Resistance, you are tasked with creating the smart contracts that will enable this new society to thrive.
