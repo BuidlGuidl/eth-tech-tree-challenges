@@ -2,7 +2,7 @@
 
 You can install this challenge using the following command:
 ```bash
-    npx create-eth@latest -e BuidlGuidl/eth-tech-tree-challenges:moloch-rage-quit-extension moloch-rage-quit
+    npx create-eth@1.0.2 -e BuidlGuidl/eth-tech-tree-challenges:moloch-rage-quit-extension moloch-rage-quit
 ```
 
 You are a main contributor to a well known DAO that distributes ETH to builders in the space. Recently there was a proposal to fund a group of hackers with a splotchy past. You vote against the proposal but the majority of the DAO voted in support. Now you are left feeling somewhat disenfranchised with the DAO but you have no way to formally quit. 
