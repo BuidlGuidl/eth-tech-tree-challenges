@@ -2,7 +2,7 @@
 
 You can install this challenge using the following command:
 ```bash
-    npx create-eth@1.0.1 -e BuidlGuidl/eth-tech-tree-challenges:eth-streaming-extension eth-streaming
+    npx create-eth@1.0.2 -e BuidlGuidl/eth-tech-tree-challenges:eth-streaming-extension eth-streaming
 ```
 
 In a world where asset allocation mechanisms have grown stale, a visionary group of technologists known as **_The StreamWeavers_** emerges. Their mission is to pioneer novel means of distributing capital that incentivize creativity and coordination. As a core developer for **_The StreamWeavers_**, you are tasked with forging the smart contracts that will allow this new system to flourish and ensure that everyone can manage their digital assets freely.
