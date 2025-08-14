@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../contracts/Challenge.sol";
+import "../contracts/TokenStreaming.sol";
 import "./DeployHelpers.s.sol";
 import { DeployContract } from "./00_deploy_contract.s.sol";
 
