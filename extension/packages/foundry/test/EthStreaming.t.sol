@@ -131,12 +131,32 @@ contract EthStreamingTest is Test {
     /**
      * An account that has withdrawn the full cap should not be be able to withdraw until some time has passed
      */
-    function testValidAccountExcessWithdrawalFails() public {
+    function testValidAccountCannotWithdrawFromDepletedStream() public {
         vm.startPrank(ALICE);
         // Empty Stream
         ethStreaming.withdraw(STREAM_CAP);
         vm.expectRevert();
         ethStreaming.withdraw(1);
+    }
+
+    /**
+     * An account should not be be able to withdraw more than the cap
+     */
+    function testValidAccountCannotWithdrawMoreThanCap() public {
+        vm.startPrank(ALICE);
+        vm.expectRevert();
+        ethStreaming.withdraw(STREAM_CAP * 2);
+        vm.stopPrank();
+
+        // Test edge case with second withdrawal
+        ethStreaming.addStream(BOB, STREAM_CAP);
+        vm.startPrank(BOB);
+        ethStreaming.withdraw(STREAM_CAP);
+
+        vm.warp(STARTING_TIMESTAMP + FREQUENCY * 2);
+
+        vm.expectRevert();
+        ethStreaming.withdraw(STREAM_CAP + 1);
     }
 
     /**
