@@ -118,7 +118,7 @@ You can find the number of votes to remove by checking their token balance as th
 ### Step 6
 The last step is we need to be able to call a function to get the result of the vote.
 
-Define a function called `getResult` that receives a uint representing the proposal id for which you want the result.
+Define a view function called `getResult` that receives a uint representing the proposal id for which you want the result.
 
 This function should revert if the vote period is not over yet. It should return true or false depending on whether a simple majority is reached:`votesFor > votesAgainst`. Abstaining votes have no effect on the outcome.
 
